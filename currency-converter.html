@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Converter</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <style>
+    body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4e4ba;
+}
+
+.container {
+  background-color: #fff;
+  padding: 2rem 3rem;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 350px; /* ✅ responsive */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.container p {
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.container input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.dropdown {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.select-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f9f9f9;
+  flex: 1;
+}
+
+.select-container img {
+  width: 24px;
+  height: 24px;
+}
+
+.select-container select {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+}
+
+.fa-arrow-right-arrow-left {
+  font-size: 1.2rem;
+  color: #555;
+  cursor: pointer;
+  margin-top: 1.5rem;
+}
+
+.msg {
+  text-align: center;
+  margin: 1rem 0;
+  font-weight: bold;
+  color: #333;
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #af4d98;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #922d7a;
+}
+
+/* ✅ Responsive Fix */
+@media (max-width: 500px) {
+  .dropdown {
+    flex-direction: column;
+    align-items: center;
+  }
+  .fa-arrow-right-arrow-left {
+    transform: rotate(90deg);
+    margin: 0.5rem 0;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Currency Converter</h2>
+    <p>Enter Amount</p>
+    <input type="text" value="1" class="amount">
+
+    <div class="dropdown">
+      <!-- From -->
+      <div class="from">
+        <p>From</p>
+        <div class="select-container">
+          <img src="https://flagsapi.com/US/flat/64.png" alt="From Flag">
+          <select name="from"></select>
+        </div>
+      </div>
+
+      <i class="fa-solid fa-arrow-right-arrow-left"></i>
+
+      <!-- To -->
+      <div class="to">
+        <p>To</p>
+        <div class="select-container">
+          <img src="https://flagsapi.com/PK/flat/64.png" alt="To Flag">
+          <select name="to"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg">1 USD = 283.20 PKR</div>
+    <button>Get Exchange Rate</button>
+  </div>
+
+<script>
+const countryList = {
+  AED: "AE", AFN: "AF", ALL: "AL", AMD: "AM", ARS: "AR", AUD: "AU",
+  BDT: "BD", BGN: "BG", BRL: "BR", CAD: "CA", CHF: "CH", CLP: "CL",
+  CNY: "CN", COP: "CO", CZK: "CZ", DKK: "DK", EGP: "EG", EUR: "FR",
+  GBP: "GB", HKD: "HK", HUF: "HU", IDR: "ID", ILS: "IL", INR: "IN",
+  JPY: "JP", KRW: "KR", KWD: "KW", LKR: "LK", MXN: "MX", MYR: "MY",
+  NOK: "NO", NZD: "NZ", PKR: "PK", PHP: "PH", PLN: "PL", RUB: "RU",
+  SAR: "SA", SEK: "SE", SGD: "SG", THB: "TH", TRY: "TR", TWD: "TW",
+  USD: "US", VND: "VN", ZAR: "ZA"
+};
+
+const BASE_URL = "https://latest.currency-api.pages.dev/v1/currencies";
+
+const dropdowns = document.querySelectorAll(".dropdown select");
+const btn = document.querySelector("button");
+const fromCurr = document.querySelector(".from select");
+const toCurr = document.querySelector(".to select");
+const msg = document.querySelector(".msg");
+
+// Populate dropdowns
+for (let select of dropdowns) {
+  for (let currCode in countryList) {
+    let newOption = document.createElement("option");
+    newOption.innerText = currCode;
+    newOption.value = currCode;
+    if (select.name === "from" && currCode === "USD") {
+      newOption.selected = "selected";
+    } else if (select.name === "to" && currCode === "PKR") {
+      newOption.selected = "selected";
+    }
+    select.append(newOption);
+  }
+  select.addEventListener("change", (evt) => updateFlag(evt.target));
+}
+
+const updateExchangeRate = async () => {
+  let amount = document.querySelector(".amount");
+  let amtVal = amount.value;
+  if (amtVal === "" || amtVal < 1) {
+    amtVal = 1;
+    amount.value = "1";
+  }
+
+  try {
+    // Fetch base currency JSON
+    const URL = `${BASE_URL}/${fromCurr.value.toLowerCase()}.json`;
+    let response = await fetch(URL);
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    let data = await response.json();
+
+    if (!data[fromCurr.value.toLowerCase()]) {
+      throw new Error("Base currency not found");
+    }
+
+    let rate = data[fromCurr.value.toLowerCase()][toCurr.value.toLowerCase()];
+    if (!rate) {
+      throw new Error("Target currency not found");
+    }
+
+    let finalAmount = (amtVal * rate).toFixed(2);
+    msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount} ${toCurr.value}`;
+  } catch (error) {
+    console.error("Error fetching exchange rate:", error);
+    msg.innerText = "⚠️ Failed to fetch exchange rate.";
+  }
+};
+
+const updateFlag = (element) => {
+  let currCode = element.value;
+  let countryCode = countryList[currCode];
+  let newSrc = `https://flagsapi.com/${countryCode}/flat/64.png`;
+  let img = element.parentElement.querySelector("img");
+  img.src = newSrc;
+};
+
+btn.addEventListener("click", (evt) => {
+  evt.preventDefault();
+  updateExchangeRate();
+});
+
+window.addEventListener("load", () => {
+  updateExchangeRate();
+});
+</script>
+</body>
+</html>
